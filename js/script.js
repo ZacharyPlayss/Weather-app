@@ -9,13 +9,17 @@ const forecastDays = document.querySelector(".fc-dayAbbr");
 const forecastIcons = document.querySelector(".fc-icons");
 const forecastDayTemp = document.querySelector(".fc-dayTemp");
 const forecastNightTemp = document.querySelector(".fc-nightTemp");
+const root = document.querySelector(':root');
+const dots = document.querySelector(".dotsContainer");
+const forecast = document.querySelector(".forecast");
 
 
 const apiKey = "7426bb0b185caa9e43af0c947720560b";
 const lang = "nl";
 const days = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
 const uitgeschrevenTemp = ["nul", "een", "twee", "drie", "vier", "vijf", "zes", "zeven", "acht", "negen", "tien", "elf", "twaalf", "dertien", "veertien", "vijftien", "zestien", "zeventien", "achttien", "negentien", "twintig", "eenentwintig", "tweeëntwintig", "drieëntwintig", "vierentwintig", "vijfentwintig", "zesentwintig", "zevenentwintig", "achtentwintig", "negenentwintig", "dertig", "eenendertig", "tweeëndertig", "drieëndertig", "vierendertig", "vijfendertig", "zesendertig", "zevenendertig", "achtendertig", "negenendertig", "veertig", "eenenveertig", "tweeënveertig", "drieënveertig", "vierenveertig", "vijfenveertig", "zesenveertig", "zevenenveertig", "achtenveertig", "negenenveertig", "vijftig"];
-const quotes = ["quote1", "quote2", "quote3", "quote4", "quote5", "quote6", "quote7"]
+
+const quotes = ["De beste manier om je zondag te verpesten... Beseffen dat het morgen weer maandag is ", "Maandag, Checklist: Koffie, koffie en... Koffie!", "Er is niets dat je vrijdag zo verpest dan het besef dat het nog maar dinsdag is.", "Woensdag is als een mini vrijdag.", "Donderdag we kunnen het weekend BIJNA zien!", "Vrijdag tijd om van je to do lijstje een toedeloe lijstje te maken.", "Zaterdag... Vrijdag voelt als 5 minuten geleden."]
 const weatherReport = {};
 weatherReport.current = {};
 weatherReport.days = [];
@@ -24,7 +28,6 @@ let errorFlag = false;
 function getClientLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(getCoordinates, showError);
-        console.log(navigator.geolocation.getCurrentPosition)
     } else {
         showError("Geolocatie niet ondersteunt door browser");
         errorFlag = true;
@@ -97,22 +100,21 @@ function getWeather(latitude, longitude) {
                 description: data.current.weather[0].description,
                 iconId: data.current.weather[0].icon
             };*/
-
-            console.log(data)
-
             const fullDate = new Date(data.current.dt * 1000);
             const dayName = days[fullDate.getDay()];
-
+            const quoteOfTheDay = quotes[fullDate.getDay()];
+            const fullTemp = Math.floor(data.current.temp);
             const day = {
                 tempDay: uitgeschrevenTemp[Math.abs(Math.floor(Math.floor(data.current.temp)))],
+                nrTemp: Math.floor(data.current.temp),
                 tempNight: null,
                 description: data.current.weather[0].description,
                 iconId: data.current.weather[0].icon,
                 //fullDate: fullDate,
-                dayName: dayName
+                dayName: dayName,
+                quote: quoteOfTheDay
             };
             weatherReport.days.push(day);
-
 
 
             //FORECAST
@@ -120,20 +122,21 @@ function getWeather(latitude, longitude) {
             dailyForecast.forEach(function(e, index) {
                 const fullDate = new Date(e.dt * 1000);
                 const dayName = days[fullDate.getDay()];
+                const quoteOfTheDay = quotes[fullDate.getDay()];
                 const day = {
                     tempDay: uitgeschrevenTemp[Math.abs(Math.floor(Math.floor(e.temp.day)))],
+                    nrTemp: Math.floor(e.temp.day),
                     tempNight: uitgeschrevenTemp[Math.abs(Math.floor(Math.floor(e.temp.night)))],
                     description: e.weather[0].description,
                     iconId: e.weather[0].icon,
                     //fullDate: fullDate,
-                    dayName: dayName
+                    dayName: dayName,
+                    quote: quoteOfTheDay
                 };
                 weatherReport.days.push(day);
             });
         })
         .then(function() {
-
-            //indien aan elke promise wordt voldaan wordt de functie createHtmlContent() aangeroepen
             createHtmlContent();
 
         })
@@ -145,77 +148,59 @@ function getWeather(latitude, longitude) {
 }
 
 function createHtmlContent() {
-    //de gegevens uit het object weatherReport worden in deze functie naar de HTML pagina verzonden.
-    //onderstaande code is een voorbeeld, pas deze code aan volgens jouw ontwerp
-
-    //indien geen foutmeldingen, verberg de footer
-    //(!errorFlag) verkort alternatief voor (errorFlag === false)
     if (!errorFlag) {
         notificationElement.style.display = "none";
     }
     //CURRENT
+    //console.log(weatherReport)
+        //FORECAST
+            let id = 0;
+    weatherReport.days.forEach(function (e, index) {
+        //aanpassingen kleurtjes naargelang de temperatuur.
+            function Classes() {
+                if (e.nrTemp < 11) {
+                    return "blue"
+                } else if (e.nrTemp > 0) {
+                    return "lightBlue"
+                } else {
+                    return "orange"
+                }
+            };
+        //min toevoegen wanneer het kleiner is dan 0 graden.
+            if (e.nrTemp < 0) {
+                e.tempDay = "min" + e.tempDay;
+            }
+            else {
+                e.tempDay = e.tempDay;
+            }
 
-    console.log(weatherReport)
-
-
-
-    /*locationElement.textContent = weatherReport.locationName;
-    tempDescElement.textContent = `Momenteel ${weatherReport.current.description}`;
-    iconElement.src = `img/${weatherReport.current.iconId}.webm`;
-    iconElement.alt = `Icoon ${weatherReport.current.description}`;
-    //als temperatuur lager is dan 0 "min" toevoegen
-    if (weatherReport.current.temp < 0) {
-        tempElement.textContent = "min " + weatherReport.current.temp;
-    } else {
-        tempElement.textContent = weatherReport.current.temp;
-    };*/
-
-    //FORECAST
-    weatherReport.days.forEach(function(e, index) {
         //toon maximaal 5 komende dagen // dag 0 -> vandaag niet tonen
         allowedDays = [0, 2, 3, 4, 5, 6];
         if (allowedDays.includes(index)) {
-
+            
             const dagenWeer = `
-            <div class="card-body" >
-                <video src="img/${e.iconId}.webm" muted autoplay loop></video>
+            <div id="${index}"class="card-body ${Classes()}" >
+                <video src="img/${e.iconId}.webm" muted playsinline autoplay loop></video>
                 <h2 class="dayName">${e.dayName}</h2>
                 <div class="align-self-center weather-temp">
                     <span class="temperatuur">${e.tempDay}</span><br>
                     <span class="graden-celsius"> graden <br> celsius</span>
-                </div>               
-                <p class="quote">Dit is dus een fantastische quote die een top quote is met zonder een quote</p>
+                </div>             
+                <p class="quote">${e.quote}</p>
             </div>`;
-            document.querySelector('.forecast').innerHTML += dagenWeer;
+            forecast.innerHTML += dagenWeer;
+
+            const dot = `<div class="dot" data-dot="${index}"></div>`;
+            dots.innerHTML += dot;
+            
+
+            
+            /*Controleren welk element de scrollbar bevat.
+            console.log(document.querySelector("body").scrollWidth > document.querySelector("body").clientWidth);*/
         }
     })
-
-    /*//tabel cel voor afkorting dag
-    const tdDayName = document.createElement("td");
-    tdDayName.textContent = e.dayName;
-    tdDayName.className = 'fw-bolder';
-    forecastDays.appendChild(tdDayName);
-
-    //tabel cel voor icoon
-    const tdIcon = document.createElement("td");
-    const imgIcon = document.createElement("img");
-    imgIcon.src = `img/${e.iconId}.png`;
-    imgIcon.className = 'img-fluid';
-    imgIcon.alt = `icoon ${e.description}`;
-    imgIcon.title = e.description; //opgelet title attribuut niet bruikbaar bij touchscreens
-    tdIcon.appendChild(imgIcon);
-    forecastIcons.appendChild(tdIcon);
-
-    //tabel cel voor dag temperatuur
-    const tdDayTemp = document.createElement("td");
-    tdDayTemp.textContent = `${e.tempDay}`;
-    tdDayTemp.title = 'Temperatuur overdag';
-    forecastDayTemp.appendChild(tdDayTemp);
-
-    //tabel cel voor nacht temperatuur
-    const tdNightTemp = document.createElement("td");
-    tdNightTemp.textContent = `${e.tempNight}`;
-    tdNightTemp.className = 'text-muted';
-    tdNightTemp.title = 'Temperatuur \'s nachts';
-    forecastNightTemp.appendChild(tdNightTemp);*/
 };
+
+dots.addEventListener('click', (e) => {
+    console.log(e.target.dataset.dot);
+});

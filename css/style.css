@@ -3,12 +3,17 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Roboto', sans-serif;
+    font-family: "Roboto", sans-serif;
 }
 
 :root {
-    --bg1: yellow;
-    --bg2: red;
+    --blue1: #324E73;
+    --blue2: #BFCFD9;
+    --orange1: #F28705;
+    --orange2: #F2C84B;
+    --lightBlue1: #C0D6D9;
+    --lightBlue2: #DEEFF4;
+    --grey: #b3b3b0;
 }
 
 body {
@@ -19,6 +24,7 @@ body {
     width: 100%;
     height: 100vh;
     display: block;
+    overflow-y: hidden;
 }
 
 .card-body {
@@ -62,13 +68,6 @@ td {
     float: left;
 }
 
-.forecast {
-    float: left;
-    display: flex;
-    flex-direction: row;
-    width: 600vw;
-}
-
 .forecast>div>video {
     position: absolute;
     z-index: 99;
@@ -90,13 +89,68 @@ td {
     margin-left: 6.75rem;
 }
 
+.forecast {
+    position: relative;
+    width: 100vw;
+    float: left;
+    display: flex;
+    flex-direction: row;
+    overflow: auto;
+    scroll-snap-type: x mandatory;
+}
+
 .card-body {
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: space-evenly;
+    margin-left: 0.1rem;
+    min-width: 100vw;
+    height: 100vh;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
 }
 
 .quote {
     width: 50%;
     margin: 0 auto;
+    font-size: 1.5rem;
+}
+
+
+/*DOTS*/
+
+.dotsContainer {
+    position:absolute;
+    width: 30%;
+    margin: 0 auto;
+    display: flex;
+    top:95vh;
+    left:37%;
+    justify-content: space-evenly;
+    z-index:100;
+}
+
+.dot {
+    background: var(--grey);
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 100%;
+    display:none;
+}
+
+
+/*colors changing*/
+
+.blue {
+    background: linear-gradient(0deg, var(--blue1) 0%, var(--blue2) 100%);
+    color:white;
+}
+
+.lightBlue {
+    background: linear-gradient(0deg, var(--lightBlue1) 0%, var(--lightBlue2) 100%);
+}
+
+.orange {
+    background: linear-gradient(0deg, var(--orange1) 0%, var(--orange2) 100%);
+    color:white;
 }
